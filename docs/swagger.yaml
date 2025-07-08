@@ -8,11 +8,32 @@ definitions:
       username:
         type: string
     type: object
+  dto.LoginDto:
+    properties:
+      email:
+        type: string
+      plainPassword:
+        type: string
+    type: object
 info:
   contact: {}
   title: Medods Test Task API
   version: "1.0"
 paths:
+  /login:
+    post:
+      operationId: login
+      parameters:
+      - description: login user
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginDto'
+      produces:
+      - application/json
+      responses: {}
+      summary: Log in
   /register:
     post:
       operationId: create-user

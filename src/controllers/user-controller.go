@@ -14,6 +14,7 @@ import (
 func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	router.GET("/users/:id", func(ctx *gin.Context) { GetUserHandler(ctx, db) })
 	router.POST("/register", func(ctx *gin.Context) { CreateUserHandler(ctx, db) })
+	router.POST("/login", func(ctx *gin.Context) { LoginHandler(ctx, db) })
 }
 
 // @Summary Get a user by ID
@@ -51,6 +52,23 @@ func CreateUserHandler(ctx *gin.Context, db *gorm.DB) {
 	ctx.BindJSON(&dto)
 
 	result, err := services.CreateUser(db, dto)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, result)
+}
+
+// @Summary Log in
+// @ID login
+// @Produce json
+// @Param dto body dto.LoginDto true "login user"
+// @Router /login [post]
+func LoginHandler(ctx *gin.Context, db *gorm.DB) {
+	var dto dto.LoginDto
+	ctx.BindJSON(&dto)
+
+	result, err := services.Login(db, dto)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
