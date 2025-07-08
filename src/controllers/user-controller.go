@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	service "github.com/dwarowski/medods-test-task/src/services"
+	"github.com/dwarowski/medods-test-task/src/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -30,7 +30,7 @@ func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 		fmt.Println(idn)
 	}
 
-	user, err := service.GetByID(db, idn)
+	user, err := services.GetByID(db, idn)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

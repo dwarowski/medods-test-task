@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	models "github.com/dwarowski/medods-test-task/src/model"
