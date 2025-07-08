@@ -1,9 +1,32 @@
-basePath: /
+definitions:
+  dto.CreateUserDto:
+    properties:
+      email:
+        type: string
+      plainPassword:
+        type: string
+      username:
+        type: string
+    type: object
 info:
   contact: {}
   title: Medods Test Task API
   version: "1.0"
 paths:
+  /register:
+    post:
+      operationId: create-user
+      parameters:
+      - description: register user
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserDto'
+      produces:
+      - application/json
+      responses: {}
+      summary: create a user
   /users/{id}:
     get:
       operationId: get-user-by-id

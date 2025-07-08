@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/dwarowski/medods-test-task/src/dto"
 	"github.com/dwarowski/medods-test-task/src/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -12,6 +13,7 @@ import (
 
 func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	router.GET("/users/:id", func(ctx *gin.Context) { GetUserHandler(ctx, db) })
+	router.POST("/register", func(ctx *gin.Context) { CreateUserHandler(ctx, db) })
 }
 
 // @Summary Get a user by ID
@@ -37,4 +39,21 @@ func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 	}
 
 	ctx.JSON(http.StatusOK, user)
+}
+
+// @Summary create a user
+// @ID create-user
+// @Produce json
+// @Param dto body dto.CreateUserDto true "register user"
+// @Router /register [post]
+func CreateUserHandler(ctx *gin.Context, db *gorm.DB) {
+	var dto dto.CreateUserDto
+	ctx.BindJSON(&dto)
+
+	result, err := services.CreateUser(db, dto)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, result)
 }
