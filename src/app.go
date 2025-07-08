@@ -3,7 +3,7 @@ package app
 import (
 	_ "github.com/dwarowski/medods-test-task/docs"
 	"github.com/dwarowski/medods-test-task/src/config"
-	controller "github.com/dwarowski/medods-test-task/src/controllers"
+	"github.com/dwarowski/medods-test-task/src/controllers"
 	"github.com/dwarowski/medods-test-task/src/models"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -25,7 +25,7 @@ func SetupApp() (*gin.Engine, error) {
 
 	r := gin.Default()
 
-	controller.RegisterRoutes(r, db)
+	controllers.RegisterRoutes(r, db)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
