@@ -4,7 +4,7 @@ import (
 	_ "github.com/dwarowski/medods-test-task/docs"
 	"github.com/dwarowski/medods-test-task/src/config"
 	controller "github.com/dwarowski/medods-test-task/src/controllers"
-	models "github.com/dwarowski/medods-test-task/src/model"
+	"github.com/dwarowski/medods-test-task/src/models"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
