@@ -2,13 +2,10 @@ package services
 
 import (
 	"errors"
-	"time"
 
 	dt "github.com/dwarowski/medods-test-task/src/dto"
 	"github.com/dwarowski/medods-test-task/src/models"
 	"github.com/dwarowski/medods-test-task/src/utils/hashstring"
-	"github.com/dwarowski/medods-test-task/src/utils/readkey"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -35,29 +32,13 @@ func CreateUser(db *gorm.DB, dto dt.CreateUserDto) (any, error) {
 		return nil, createUser.Error
 	}
 
-	// Generate access and refresh token
-	accessToken, accErr := GenreateAccessToken(user.ID)
-	if accErr != nil {
-		return nil, accErr
-	}
-	refreshToken, tokenId, refErr := GenerateRefreshToken(user.ID)
-	if refErr != nil {
-		return nil, refErr
-	}
-
-	// Hash token Id to check later
-	hashedToken, tokenErr := hashstring.Hash(tokenId.String())
+	// Generating and saving tokens
+	tokens, tokenErr := GenerateAndSaveTokens(db, user)
 	if tokenErr != nil {
-		return nil, refErr
+		return nil, tokenErr
 	}
 
-	// Save hashed token Id to db
-	addToken := db.Model(&user).Update("refresh_token", hashedToken)
-	if addToken.Error != nil {
-		return nil, addToken.Error
-	}
-
-	return dt.TokensDto{AccessToken: accessToken, RefreshToken: refreshToken}, nil
+	return tokens, nil
 }
 
 func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
@@ -75,12 +56,23 @@ func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
 		return nil, errors.New("invalid credentials")
 	}
 
+	// Generating and saving tokens
+	tokens, tokenErr := GenerateAndSaveTokens(db, user)
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	return tokens, nil
+}
+
+func GenerateAndSaveTokens(db *gorm.DB, user models.User) (any, error) {
+
 	// Generate access and refresh token
-	accessToken, accErr := GenreateAccessToken(user.ID)
+	accessToken, accErr := gentokens.GenreateAccessToken(user.ID)
 	if accErr != nil {
 		return nil, accErr
 	}
-	refreshToken, tokenId, refErr := GenerateRefreshToken(user.ID)
+	refreshToken, tokenId, refErr := gentokens.GenerateRefreshToken(user.ID)
 	if refErr != nil {
 		return nil, refErr
 	}
@@ -98,50 +90,4 @@ func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
 	}
 
 	return dt.TokensDto{AccessToken: accessToken, RefreshToken: refreshToken}, nil
-}
-
-func GenreateAccessToken(userId uuid.UUID) (string, error) {
-	payload := jwt.MapClaims{
-		"id":   uuid.New(),
-		"guid": userId,
-		"exp":  time.Now().Add(time.Minute * 4).Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodRS512, payload)
-
-	secret, err := readkey.ReadRSAKey("keys/private.pem")
-	if err != nil {
-		return "", err
-	}
-
-	signedToken, err := token.SignedString(secret)
-	if err != nil {
-		return "", err
-	}
-
-	return signedToken, nil
-}
-
-func GenerateRefreshToken(userId uuid.UUID) (string, uuid.UUID, error) {
-	tokenId := uuid.New()
-	payload := jwt.MapClaims{
-		"id":       tokenId,
-		"guid":     userId,
-		"deviceId": uuid.New(),
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodRS512, payload)
-
-	secret, err := readkey.ReadRSAKey("keys/private.pem")
-	if err != nil {
-		return "", uuid.Nil, err
-	}
-
-	signedToken, err := token.SignedString(secret)
-	if err != nil {
-		return "", uuid.Nil, err
-	}
-
-	return signedToken, tokenId, nil
 }
