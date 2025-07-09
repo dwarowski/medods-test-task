@@ -17,8 +17,6 @@ definitions:
     type: object
 info:
   contact: {}
-  title: Medods Test Task API
-  version: "1.0"
 paths:
   /login:
     post:
@@ -53,17 +51,13 @@ paths:
       operationId: get-user-by-id
       parameters:
       - description: User ID
+        format: uuid
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses: {}
       summary: Get a user by ID
-securityDefinitions:
-  ApiKeyAuth:
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"

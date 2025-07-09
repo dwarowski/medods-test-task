@@ -1,9 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "Medods Test Task API",
-        "contact": {},
-        "version": "1.0"
+        "contact": {}
     },
     "paths": {
         "/login": {
@@ -57,7 +55,8 @@
                 "operationId": "get-user-by-id",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "format": "uuid",
                         "description": "User ID",
                         "name": "id",
                         "in": "path",
@@ -93,13 +92,6 @@
                     "type": "string"
                 }
             }
-        }
-    },
-    "securityDefinitions": {
-        "ApiKeyAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
         }
     }
 }

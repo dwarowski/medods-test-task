@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/dwarowski/medods-test-task/src/dto"
@@ -20,7 +19,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 // @Summary Get a user by ID
 // @ID get-user-by-id
 // @Produce json
-// @Param id path int true "User ID"
+// @Param id path string true "User ID" Format(uuid)
 // @Router /users/{id} [get]
 func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 	id := ctx.Param("id")
@@ -29,8 +28,6 @@ func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
-	} else {
-		fmt.Println(idn)
 	}
 
 	user, err := services.GetByID(db, idn)
