@@ -24,14 +24,18 @@ func GetByID(db *gorm.DB, id int) (any, error) {
 }
 
 func CreateUser(db *gorm.DB, dto dt.CreateUserDto) (any, error) {
+
+	// Hash plain password
 	HashedPassword, _ := hashstring.Hash(dto.PlainPassword)
 	user := models.User{Username: dto.Username, Email: dto.Email, Password: HashedPassword}
 
+	// Save user to db
 	createUser := db.Create(&user)
 	if createUser.Error != nil {
 		return nil, createUser.Error
 	}
 
+	// Generate access and refresh token
 	accessToken, accErr := GenreateAccessToken(user.ID)
 	if accErr != nil {
 		return nil, accErr
@@ -41,32 +45,37 @@ func CreateUser(db *gorm.DB, dto dt.CreateUserDto) (any, error) {
 		return nil, refErr
 	}
 
+	// Hash token Id to check later
 	hashedToken, tokenErr := hashstring.Hash(tokenId.String())
 	if tokenErr != nil {
 		return nil, refErr
 	}
 
+	// Save hashed token Id to db
 	addToken := db.Model(&user).Update("refresh_token", hashedToken)
 	if addToken.Error != nil {
 		return nil, addToken.Error
 	}
 
-	tokens := dt.TokensDto{AccessToken: accessToken, RefreshToken: refreshToken}
-	return tokens, nil
+	return dt.TokensDto{AccessToken: accessToken, RefreshToken: refreshToken}, nil
 }
 
 func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
+
+	// Check if user with this email exsist
 	var user models.User
 	result := db.Table("users").Where("email = ?", dto.Email).First(&user)
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, errors.New("invalid credentials")
 	}
 
+	// Check if password is correct
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(dto.PlainPassword))
 	if err != nil {
 		return nil, errors.New("invalid credentials")
 	}
 
+	// Generate access and refresh token
 	accessToken, accErr := GenreateAccessToken(user.ID)
 	if accErr != nil {
 		return nil, accErr
@@ -76,18 +85,19 @@ func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
 		return nil, refErr
 	}
 
+	// Hash token Id to check later
 	hashedToken, tokenErr := hashstring.Hash(tokenId.String())
 	if tokenErr != nil {
 		return nil, refErr
 	}
 
+	// Save hashed token Id to db
 	addToken := db.Model(&user).Update("refresh_token", hashedToken)
 	if addToken.Error != nil {
 		return nil, addToken.Error
 	}
 
-	tokens := dt.TokensDto{AccessToken: accessToken, RefreshToken: refreshToken}
-	return tokens, nil
+	return dt.TokensDto{AccessToken: accessToken, RefreshToken: refreshToken}, nil
 }
 
 func GenreateAccessToken(userId uuid.UUID) (string, error) {
