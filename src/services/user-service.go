@@ -75,11 +75,11 @@ func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
 func GenerateAndSaveTokens(db *gorm.DB, userID uuid.UUID) (any, error) {
 
 	// Generate access and refresh token
-	accessToken, accErr := gentokens.GenreateAccessToken(userID)
+	accessToken, accessTokenId, accErr := gentokens.GenreateAccessToken(userID)
 	if accErr != nil {
 		return nil, accErr
 	}
-	refreshToken, tokenId, refErr := gentokens.GenerateRefreshToken(userID)
+	refreshToken, tokenId, refErr := gentokens.GenerateRefreshToken(accessTokenId, userID)
 	if refErr != nil {
 		return nil, refErr
 	}
