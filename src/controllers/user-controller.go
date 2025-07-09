@@ -3,11 +3,11 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/dwarowski/medods-test-task/src/dto"
 	"github.com/dwarowski/medods-test-task/src/services"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +25,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 	id := ctx.Param("id")
 
-	idn, err := strconv.Atoi(id)
+	idn, err := uuid.Parse(id)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

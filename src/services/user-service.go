@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetByID(db *gorm.DB, id int) (any, error) {
+func GetByID(db *gorm.DB, id uuid.UUID) (any, error) {
 	var user models.User
 	result := db.First(&user, id)
 	if result.Error != nil {
