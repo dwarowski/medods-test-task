@@ -2,11 +2,12 @@ package services
 
 import (
 	"errors"
-	"os"
 	"time"
 
 	dt "github.com/dwarowski/medods-test-task/src/dto"
 	"github.com/dwarowski/medods-test-task/src/models"
+	"github.com/dwarowski/medods-test-task/src/utils/hashstring"
+	"github.com/dwarowski/medods-test-task/src/utils/readkey"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -23,7 +24,7 @@ func GetByID(db *gorm.DB, id int) (any, error) {
 }
 
 func CreateUser(db *gorm.DB, dto dt.CreateUserDto) (any, error) {
-	HashedPassword, _ := HashPassword(dto.PlainPassword)
+	HashedPassword, _ := hashstring.Hash(dto.PlainPassword)
 	user := models.User{Username: dto.Username, Email: dto.Email, Password: HashedPassword}
 
 	createUser := db.Create(&user)
@@ -40,7 +41,7 @@ func CreateUser(db *gorm.DB, dto dt.CreateUserDto) (any, error) {
 		return nil, refErr
 	}
 
-	hashedToken, tokenErr := HashPassword(tokenId.String())
+	hashedToken, tokenErr := hashstring.Hash(tokenId.String())
 	if tokenErr != nil {
 		return nil, refErr
 	}
@@ -75,7 +76,7 @@ func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
 		return nil, refErr
 	}
 
-	hashedToken, tokenErr := HashPassword(tokenId.String())
+	hashedToken, tokenErr := hashstring.Hash(tokenId.String())
 	if tokenErr != nil {
 		return nil, refErr
 	}
@@ -89,23 +90,6 @@ func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
 	return tokens, nil
 }
 
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func ReadRSAKey(path string) (any, error) {
-	privateKeyBytes, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
-	if err != nil {
-		return nil, err
-	}
-	return privateKey, nil
-}
-
 func GenreateAccessToken(userId uuid.UUID) (string, error) {
 	payload := jwt.MapClaims{
 		"id":   uuid.New(),
@@ -115,7 +99,7 @@ func GenreateAccessToken(userId uuid.UUID) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS512, payload)
 
-	secret, err := ReadRSAKey("keys/private.pem")
+	secret, err := readkey.ReadRSAKey("keys/private.pem")
 	if err != nil {
 		return "", err
 	}
@@ -139,7 +123,7 @@ func GenerateRefreshToken(userId uuid.UUID) (string, uuid.UUID, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS512, payload)
 
-	secret, err := ReadRSAKey("keys/private.pem")
+	secret, err := readkey.ReadRSAKey("keys/private.pem")
 	if err != nil {
 		return "", uuid.Nil, err
 	}
