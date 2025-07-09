@@ -20,7 +20,7 @@ func GetByID(db *gorm.DB, id uuid.UUID) (any, error) {
 	}
 
 	// Generating and saving tokens
-	tokens, tokenErr := GenerateAndSaveTokens(db, user)
+	tokens, tokenErr := GenerateAndSaveTokens(db, user.ID)
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
@@ -40,7 +40,7 @@ func CreateUser(db *gorm.DB, dto dt.CreateUserDto) (any, error) {
 	}
 
 	// Generating and saving tokens
-	tokens, tokenErr := GenerateAndSaveTokens(db, user)
+	tokens, tokenErr := GenerateAndSaveTokens(db, user.ID)
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
@@ -64,7 +64,7 @@ func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
 	}
 
 	// Generating and saving tokens
-	tokens, tokenErr := GenerateAndSaveTokens(db, user)
+	tokens, tokenErr := GenerateAndSaveTokens(db, user.ID)
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
@@ -72,14 +72,14 @@ func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
 	return tokens, nil
 }
 
-func GenerateAndSaveTokens(db *gorm.DB, user models.User) (any, error) {
+func GenerateAndSaveTokens(db *gorm.DB, userID uuid.UUID) (any, error) {
 
 	// Generate access and refresh token
-	accessToken, accErr := gentokens.GenreateAccessToken(user.ID)
+	accessToken, accErr := gentokens.GenreateAccessToken(userID)
 	if accErr != nil {
 		return nil, accErr
 	}
-	refreshToken, tokenId, refErr := gentokens.GenerateRefreshToken(user.ID)
+	refreshToken, tokenId, refErr := gentokens.GenerateRefreshToken(userID)
 	if refErr != nil {
 		return nil, refErr
 	}
@@ -91,7 +91,7 @@ func GenerateAndSaveTokens(db *gorm.DB, user models.User) (any, error) {
 	}
 
 	// Save hashed token Id to db
-	addToken := db.Model(&user).Update("refresh_token", hashedToken)
+	addToken := db.Model(&models.User{}).Where("id = ?", userID).Update("refresh_token", hashedToken)
 	if addToken.Error != nil {
 		return nil, addToken.Error
 	}
