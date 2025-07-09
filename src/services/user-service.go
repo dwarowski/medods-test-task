@@ -5,6 +5,7 @@ import (
 
 	dt "github.com/dwarowski/medods-test-task/src/dto"
 	"github.com/dwarowski/medods-test-task/src/models"
+	"github.com/dwarowski/medods-test-task/src/utils/gentokens"
 	"github.com/dwarowski/medods-test-task/src/utils/hashstring"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -17,7 +18,13 @@ func GetByID(db *gorm.DB, id uuid.UUID) (any, error) {
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return user, nil
+
+	// Generating and saving tokens
+	tokens, tokenErr := GenerateAndSaveTokens(db, user)
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+	return tokens, nil
 }
 
 func CreateUser(db *gorm.DB, dto dt.CreateUserDto) (any, error) {
