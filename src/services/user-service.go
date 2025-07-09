@@ -31,16 +31,21 @@ func CreateUser(db *gorm.DB, dto dt.CreateUserDto) (any, error) {
 		return nil, createUser.Error
 	}
 
-	accessToken, accErr := GenreateToken(user.ID, false)
+	accessToken, accErr := GenreateAccessToken(user.ID)
 	if accErr != nil {
 		return nil, accErr
 	}
-	refreshToken, refErr := GenreateToken(user.ID, true)
+	refreshToken, tokenId, refErr := GenerateRefreshToken(user.ID)
 	if refErr != nil {
 		return nil, refErr
 	}
 
-	addToken := db.Model(&user).Update("refresh_token", refreshToken)
+	hashedToken, tokenErr := HashPassword(tokenId.String())
+	if tokenErr != nil {
+		return nil, refErr
+	}
+
+	addToken := db.Model(&user).Update("refresh_token", hashedToken)
 	if addToken.Error != nil {
 		return nil, addToken.Error
 	}
@@ -61,7 +66,27 @@ func Login(db *gorm.DB, dto dt.LoginDto) (any, error) {
 		return nil, errors.New("invalid credentials")
 	}
 
-	return user.ID, nil
+	accessToken, accErr := GenreateAccessToken(user.ID)
+	if accErr != nil {
+		return nil, accErr
+	}
+	refreshToken, tokenId, refErr := GenerateRefreshToken(user.ID)
+	if refErr != nil {
+		return nil, refErr
+	}
+
+	hashedToken, tokenErr := HashPassword(tokenId.String())
+	if tokenErr != nil {
+		return nil, refErr
+	}
+
+	addToken := db.Model(&user).Update("refresh_token", hashedToken)
+	if addToken.Error != nil {
+		return nil, addToken.Error
+	}
+
+	tokens := dt.TokensDto{AccessToken: accessToken, RefreshToken: refreshToken}
+	return tokens, nil
 }
 
 func HashPassword(password string) (string, error) {
@@ -81,19 +106,11 @@ func ReadRSAKey(path string) (any, error) {
 	return privateKey, nil
 }
 
-func GenreateToken(userId uuid.UUID, tokenType bool) (string, error) {
+func GenreateAccessToken(userId uuid.UUID) (string, error) {
 	payload := jwt.MapClaims{
 		"id":   uuid.New(),
 		"guid": userId,
 		"exp":  time.Now().Add(time.Minute * 4).Unix(),
-	}
-
-	if tokenType {
-		payload = jwt.MapClaims{
-			"id":   uuid.New(),
-			"guid": userId,
-			"exp":  time.Now().Add(time.Hour * 24).Unix(),
-		}
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS512, payload)
@@ -109,4 +126,28 @@ func GenreateToken(userId uuid.UUID, tokenType bool) (string, error) {
 	}
 
 	return signedToken, nil
+}
+
+func GenerateRefreshToken(userId uuid.UUID) (string, uuid.UUID, error) {
+	tokenId := uuid.New()
+	payload := jwt.MapClaims{
+		"id":       tokenId,
+		"guid":     userId,
+		"deviceId": uuid.New(),
+		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS512, payload)
+
+	secret, err := ReadRSAKey("keys/private.pem")
+	if err != nil {
+		return "", uuid.Nil, err
+	}
+
+	signedToken, err := token.SignedString(secret)
+	if err != nil {
+		return "", uuid.Nil, err
+	}
+
+	return signedToken, tokenId, nil
 }
