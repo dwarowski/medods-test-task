@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetByID(db *gorm.DB, id uuid.UUID, userAgent string) (any, error) {
+func GetByID(db *gorm.DB, id uuid.UUID, userAgent string, ipAdress string) (any, error) {
 	var user models.User
 	result := db.First(&user, id)
 	if result.Error != nil {
@@ -20,14 +20,14 @@ func GetByID(db *gorm.DB, id uuid.UUID, userAgent string) (any, error) {
 	}
 
 	// Generating and saving tokens
-	tokens, tokenErr := GenerateAndSaveTokens(db, user.ID, userAgent)
+	tokens, tokenErr := GenerateAndSaveTokens(db, user.ID, userAgent, ipAdress)
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
 	return tokens, nil
 }
 
-func CreateUser(db *gorm.DB, dto dt.CreateUserDto, userAgent string) (any, error) {
+func CreateUser(db *gorm.DB, dto dt.CreateUserDto, userAgent string, ipAdress string) (any, error) {
 
 	// Hash plain password
 	HashedPassword, _ := hashstring.Hash(dto.PlainPassword)
@@ -40,7 +40,7 @@ func CreateUser(db *gorm.DB, dto dt.CreateUserDto, userAgent string) (any, error
 	}
 
 	// Generating and saving tokens
-	tokens, tokenErr := GenerateAndSaveTokens(db, user.ID, userAgent)
+	tokens, tokenErr := GenerateAndSaveTokens(db, user.ID, userAgent, ipAdress)
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
@@ -48,7 +48,7 @@ func CreateUser(db *gorm.DB, dto dt.CreateUserDto, userAgent string) (any, error
 	return tokens, nil
 }
 
-func Login(db *gorm.DB, dto dt.LoginDto, userAgent string) (any, error) {
+func Login(db *gorm.DB, dto dt.LoginDto, userAgent string, ipAdress string) (any, error) {
 
 	// Check if user with this email exsist
 	var user models.User
@@ -64,7 +64,7 @@ func Login(db *gorm.DB, dto dt.LoginDto, userAgent string) (any, error) {
 	}
 
 	// Generating and saving tokens
-	tokens, tokenErr := GenerateAndSaveTokens(db, user.ID, userAgent)
+	tokens, tokenErr := GenerateAndSaveTokens(db, user.ID, userAgent, ipAdress)
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
@@ -72,14 +72,14 @@ func Login(db *gorm.DB, dto dt.LoginDto, userAgent string) (any, error) {
 	return tokens, nil
 }
 
-func GenerateAndSaveTokens(db *gorm.DB, userID uuid.UUID, userAgent string) (any, error) {
+func GenerateAndSaveTokens(db *gorm.DB, userID uuid.UUID, userAgent string, ipAdress string) (any, error) {
 
 	// Generate access and refresh token
 	accessToken, accessTokenId, accErr := gentokens.GenreateAccessToken(userID)
 	if accErr != nil {
 		return nil, accErr
 	}
-	refreshToken, tokenId, refErr := gentokens.GenerateRefreshToken(accessTokenId, userID, userAgent)
+	refreshToken, tokenId, refErr := gentokens.GenerateRefreshToken(accessTokenId, userID, userAgent, ipAdress)
 	if refErr != nil {
 		return nil, refErr
 	}

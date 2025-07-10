@@ -17,6 +17,7 @@ type RefreshTokenClaims struct {
 	ATID      uuid.UUID `json:"atid"` // Access Token ID
 	GUID      uuid.UUID `json:"guid"`
 	UserAgent string    `json:"userAgent"`
+	IpAdress  string    `json:"ipadress"`
 	jwt.RegisteredClaims
 }
 
@@ -45,12 +46,13 @@ func GenreateAccessToken(userId uuid.UUID) (string, uuid.UUID, error) {
 	return signedToken, tokenId, nil
 }
 
-func GenerateRefreshToken(accessTokenId uuid.UUID, userId uuid.UUID, userAgent string) (string, uuid.UUID, error) {
+func GenerateRefreshToken(accessTokenId uuid.UUID, userId uuid.UUID, userAgent string, ipAdress string) (string, uuid.UUID, error) {
 	tokenId := uuid.New()
 	payload := RefreshTokenClaims{
 		ATID:      accessTokenId,
 		GUID:      userId,
-		UserAgent: userAgent,
+		UserAgent: userAgent, // add hash to protect data
+		IpAdress:  ipAdress,  // add hash to protect data
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        tokenId.String(),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)), // Set expiration
