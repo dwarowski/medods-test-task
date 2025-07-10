@@ -30,7 +30,12 @@ func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	user, err := services.GetByID(db, idn)
+	userAgent := ctx.GetHeader("User-Agent")
+	if userAgent == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.New("User-Agent Not Found")})
+	}
+
+	user, err := services.GetByID(db, idn, userAgent)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -48,7 +53,12 @@ func CreateUserHandler(ctx *gin.Context, db *gorm.DB) {
 	var dto dto.CreateUserDto
 	ctx.BindJSON(&dto)
 
-	result, err := services.CreateUser(db, dto)
+	userAgent := ctx.GetHeader("User-Agent")
+	if userAgent == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.New("User-Agent Not Found")})
+	}
+
+	result, err := services.CreateUser(db, dto, userAgent)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -65,7 +75,12 @@ func LoginHandler(ctx *gin.Context, db *gorm.DB) {
 	var dto dto.LoginDto
 	ctx.BindJSON(&dto)
 
-	result, err := services.Login(db, dto)
+	userAgent := ctx.GetHeader("User-Agent")
+	if userAgent == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.New("User-Agent Not Found")})
+	}
+
+	result, err := services.Login(db, dto, userAgent)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
