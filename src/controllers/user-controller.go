@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/dwarowski/medods-test-task/src/dto"
@@ -14,6 +15,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	router.GET("/users/:id", func(ctx *gin.Context) { GetUserHandler(ctx, db) })
 	router.POST("/register", func(ctx *gin.Context) { CreateUserHandler(ctx, db) })
 	router.POST("/login", func(ctx *gin.Context) { LoginHandler(ctx, db) })
+	router.POST("/refresh", func(ctx *gin.Context) { RefreshHandler(ctx, db) })
 }
 
 // @Summary Get a user by ID
@@ -87,6 +89,30 @@ func LoginHandler(ctx *gin.Context, db *gorm.DB) {
 	ipAdress := ctx.ClientIP()
 
 	result, err := services.Login(db, dto, userAgent, ipAdress)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, result)
+}
+
+// @Summary Refresh
+// @ID token-refresh
+// @Produce json
+// @Param dto body dto.TokensDto true "refresh tokens"
+// @Router /refresh [post]
+func RefreshHandler(ctx *gin.Context, db *gorm.DB) {
+	var dto dto.TokensDto
+	ctx.BindJSON(&dto)
+
+	userAgent := ctx.GetHeader("User-Agent")
+	if userAgent == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.New("User-Agent Not Found")})
+	}
+
+	ipAdress := ctx.ClientIP()
+
+	result, err := services.RefreshToken(db, dto, userAgent, ipAdress)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

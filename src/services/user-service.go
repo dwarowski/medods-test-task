@@ -1,12 +1,19 @@
 package services
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
+	"time"
 
 	dt "github.com/dwarowski/medods-test-task/src/dto"
 	"github.com/dwarowski/medods-test-task/src/models"
 	"github.com/dwarowski/medods-test-task/src/utils/gentokens"
 	"github.com/dwarowski/medods-test-task/src/utils/hashstring"
+	"github.com/dwarowski/medods-test-task/src/utils/readkey"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -97,4 +104,75 @@ func GenerateAndSaveTokens(db *gorm.DB, userID uuid.UUID, userAgent string, ipAd
 	}
 
 	return dt.TokensDto{AccessToken: accessToken, RefreshToken: refreshToken}, nil
+}
+
+func RefreshToken(db *gorm.DB, dto dt.TokensDto, userAgent string, ipAdress string) (any, error) {
+
+	// Parse refresh token and save payload with defined structure
+	refreshToken := &gentokens.RefreshTokenClaims{}
+	_, refTknErr := jwt.ParseWithClaims(dto.RefreshToken, refreshToken, func(t *jwt.Token) (any, error) { return readkey.ReadPublicKey("keys/public.pem") })
+	if refTknErr != nil {
+		return nil, refTknErr
+	}
+
+	// Parse access token and save payload with defined structure
+	accessToken := &gentokens.AccessTokenClaims{}
+	_, accTknErr := jwt.ParseWithClaims(dto.AccessToken, accessToken, func(t *jwt.Token) (any, error) { return readkey.ReadPublicKey("keys/public.pem") })
+	if accTknErr != nil {
+		fmt.Printf("\x1b[43mWarning: %v\x1b[0m\n ", accTknErr)
+	}
+
+	// Check if tokens are pair
+	if accessToken.ID != refreshToken.ATID.String() {
+		return nil, errors.New("token id mismatch")
+	}
+
+	// Get user from db
+	userModel := models.User{ID: refreshToken.GUID}
+	findRes := db.First(&userModel)
+	if findRes.Error != nil {
+		return nil, findRes.Error
+	}
+
+	// compare refresh token in db
+	isTokenValid := bcrypt.CompareHashAndPassword([]byte(userModel.RefreshToken), []byte(refreshToken.ID))
+	if isTokenValid != nil {
+		return nil, errors.New("invalid refresh token")
+	}
+
+	// Deny refresh from different devices
+	if userAgent != refreshToken.UserAgent {
+		removeToken := db.Model(&models.User{}).Where("id = ?", refreshToken.GUID).Update("refresh_token", "")
+		if removeToken.Error != nil {
+			return nil, removeToken.Error
+		}
+		return nil, errors.New("can't refresh from different device")
+	}
+
+	// Warn if ip changed
+	if ipAdress != refreshToken.IpAdress {
+		payload := dt.SendToWebhookDto{
+			UID:       refreshToken.GUID,
+			IpAddress: ipAdress,
+			UserAgent: userAgent,
+			Timestamp: time.Now(),
+		}
+		jsonData, _ := json.Marshal(payload)
+		webhookURL := "URL"
+		resp, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			fmt.Printf("Error sending webhook: %v", err)
+		} else {
+			defer resp.Body.Close()
+			fmt.Printf("Webhook sent successfully. Status code: %d", resp.StatusCode)
+		}
+
+	}
+
+	// Refresh tokens
+	tokens, tokenErr := GenerateAndSaveTokens(db, refreshToken.GUID, userAgent, ipAdress)
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+	return tokens, nil
 }

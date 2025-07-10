@@ -36,6 +36,27 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/refresh": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Refresh",
+                "operationId": "token-refresh",
+                "parameters": [
+                    {
+                        "description": "refresh tokens",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TokensDto"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/register": {
             "post": {
                 "produces": [
@@ -100,6 +121,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "plainPassword": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TokensDto": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
                     "type": "string"
                 }
             }

@@ -15,6 +15,13 @@ definitions:
       plainPassword:
         type: string
     type: object
+  dto.TokensDto:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -32,6 +39,20 @@ paths:
       - application/json
       responses: {}
       summary: Log in
+  /refresh:
+    post:
+      operationId: token-refresh
+      parameters:
+      - description: refresh tokens
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TokensDto'
+      produces:
+      - application/json
+      responses: {}
+      summary: Refresh
   /register:
     post:
       operationId: create-user
