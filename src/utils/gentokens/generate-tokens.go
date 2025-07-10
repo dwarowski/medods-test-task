@@ -8,12 +8,26 @@ import (
 	"github.com/google/uuid"
 )
 
+type AccessTokenClaims struct {
+	GUID uuid.UUID `json:"guid"`
+	jwt.RegisteredClaims
+}
+
+type RefreshTokenClaims struct {
+	ATID     uuid.UUID `json:"atid"` // Access Token ID
+	GUID     uuid.UUID `json:"guid"`
+	DeviceID uuid.UUID `json:"deviceId"`
+	jwt.RegisteredClaims
+}
+
 func GenreateAccessToken(userId uuid.UUID) (string, uuid.UUID, error) {
 	tokenId := uuid.New()
-	payload := jwt.MapClaims{
-		"id":   tokenId,
-		"guid": userId,
-		"exp":  time.Now().Add(time.Minute * 4).Unix(),
+	payload := AccessTokenClaims{
+		GUID: userId,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        tokenId.String(),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 4)), // Set expiration
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS512, payload)
@@ -33,12 +47,14 @@ func GenreateAccessToken(userId uuid.UUID) (string, uuid.UUID, error) {
 
 func GenerateRefreshToken(accessTokenId uuid.UUID, userId uuid.UUID) (string, uuid.UUID, error) {
 	tokenId := uuid.New()
-	payload := jwt.MapClaims{
-		"id":       tokenId,
-		"atid":     accessTokenId,
-		"guid":     userId,
-		"deviceId": uuid.New(),
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+	payload := RefreshTokenClaims{
+		ATID:     accessTokenId,
+		GUID:     userId,
+		DeviceID: uuid.New(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        tokenId.String(),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)), // Set expiration
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS512, payload)
