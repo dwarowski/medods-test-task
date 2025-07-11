@@ -42,10 +42,10 @@ func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 	}
 
 	// Get clinet ip address
-	ipAdress := ctx.ClientIP()
+	ipAddress := ctx.ClientIP()
 
 	// Get tokens by ID
-	user, err := services.GetByID(db, idn, userAgent, ipAdress)
+	user, err := services.GetByID(db, idn, userAgent, ipAddress)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -71,10 +71,10 @@ func CreateUserHandler(ctx *gin.Context, db *gorm.DB) {
 	}
 
 	// Get clinet ip address
-	ipAdress := ctx.ClientIP()
+	ipAddress := ctx.ClientIP()
 
 	// Try create user and return tokens
-	result, err := services.CreateUser(db, dto, userAgent, ipAdress)
+	result, err := services.CreateUser(db, dto, userAgent, ipAddress)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -100,10 +100,10 @@ func LoginHandler(ctx *gin.Context, db *gorm.DB) {
 	}
 
 	// Get clinet ip address
-	ipAdress := ctx.ClientIP()
+	ipAddress := ctx.ClientIP()
 
 	// Try loggin in and return tokens
-	result, err := services.Login(db, dto, userAgent, ipAdress)
+	result, err := services.Login(db, dto, userAgent, ipAddress)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -129,10 +129,10 @@ func RefreshHandler(ctx *gin.Context, db *gorm.DB) {
 	}
 
 	// Get clinet ip address
-	ipAdress := ctx.ClientIP()
+	ipAddress := ctx.ClientIP()
 
 	// Try refreshing tokens
-	result, err := services.RefreshToken(db, dto, userAgent, ipAdress)
+	result, err := services.RefreshToken(db, dto, userAgent, ipAddress)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
