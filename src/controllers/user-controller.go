@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Register all routes set in controller file
 func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	router.GET("/users/:id", func(ctx *gin.Context) { GetUserHandler(ctx, db) })
 	router.POST("/register", func(ctx *gin.Context) { CreateUserHandler(ctx, db) })
@@ -25,27 +26,30 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 // @Param id path string true "User ID" Format(uuid)
 // @Router /users/{id} [get]
 func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
-	id := ctx.Param("id")
 
+	// Get id param and check if its UUID
+	id := ctx.Param("id")
 	idn, err := uuid.Parse(id)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Get user-agent and check if its exsist
 	userAgent := ctx.GetHeader("User-Agent")
 	if userAgent == "" {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.New("User-Agent Not Found")})
 	}
 
+	// Get clinet ip address
 	ipAdress := ctx.ClientIP()
 
+	// Get tokens by ID
 	user, err := services.GetByID(db, idn, userAgent, ipAdress)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-
 	ctx.JSON(http.StatusOK, user)
 }
 
@@ -55,16 +59,21 @@ func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 // @Param dto body dto.CreateUserDto true "register user"
 // @Router /register [post]
 func CreateUserHandler(ctx *gin.Context, db *gorm.DB) {
+
+	// Get data from dto
 	var dto dto.CreateUserDto
 	ctx.BindJSON(&dto)
 
+	// Get user-agent and check if its exsist
 	userAgent := ctx.GetHeader("User-Agent")
 	if userAgent == "" {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.New("User-Agent Not Found")})
 	}
 
+	// Get clinet ip address
 	ipAdress := ctx.ClientIP()
 
+	// Try create user and return tokens
 	result, err := services.CreateUser(db, dto, userAgent, ipAdress)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -79,16 +88,21 @@ func CreateUserHandler(ctx *gin.Context, db *gorm.DB) {
 // @Param dto body dto.LoginDto true "login user"
 // @Router /login [post]
 func LoginHandler(ctx *gin.Context, db *gorm.DB) {
+
+	// Get data from dto
 	var dto dto.LoginDto
 	ctx.BindJSON(&dto)
 
+	// Get user-agent and check if its exsist
 	userAgent := ctx.GetHeader("User-Agent")
 	if userAgent == "" {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.New("User-Agent Not Found")})
 	}
 
+	// Get clinet ip address
 	ipAdress := ctx.ClientIP()
 
+	// Try loggin in and return tokens
 	result, err := services.Login(db, dto, userAgent, ipAdress)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -103,16 +117,21 @@ func LoginHandler(ctx *gin.Context, db *gorm.DB) {
 // @Param dto body dto.TokensDto true "refresh tokens"
 // @Router /refresh [post]
 func RefreshHandler(ctx *gin.Context, db *gorm.DB) {
+
+	// Get data from dto
 	var dto dto.TokensDto
 	ctx.BindJSON(&dto)
 
+	// Get user-agent and check if its exsist
 	userAgent := ctx.GetHeader("User-Agent")
 	if userAgent == "" {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.New("User-Agent Not Found")})
 	}
 
+	// Get clinet ip address
 	ipAdress := ctx.ClientIP()
 
+	// Try refreshing tokens
 	result, err := services.RefreshToken(db, dto, userAgent, ipAdress)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -127,17 +146,19 @@ func RefreshHandler(ctx *gin.Context, db *gorm.DB) {
 // @Router /getUUID [get]
 // @Security ApiKeyAuth
 func getUUID(ctx *gin.Context, db *gorm.DB) {
+
+	// Get authorization header from request
 	authToken := ctx.GetHeader("Authorization")
 	if authToken == "" {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "authorization Not Found"})
 		return
 	}
 
+	// Try getting user id from db
 	result, err := services.GetUUID(db, authToken)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(http.StatusOK, result)
-
 }
