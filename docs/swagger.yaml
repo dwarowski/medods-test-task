@@ -24,7 +24,18 @@ definitions:
     type: object
 info:
   contact: {}
+  title: Medods Test Task API
+  version: "1.0"
 paths:
+  /getUUID:
+    get:
+      operationId: get-uuid
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get user Id
   /login:
     post:
       operationId: login
@@ -81,4 +92,9 @@ paths:
       - application/json
       responses: {}
       summary: Get a user by ID
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

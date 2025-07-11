@@ -1,9 +1,26 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "title": "Medods Test Task API",
+        "contact": {},
+        "version": "1.0"
     },
     "paths": {
+        "/getUUID": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get user Id",
+                "operationId": "get-uuid",
+                "responses": {}
+            }
+        },
         "/login": {
             "post": {
                 "produces": [
@@ -124,6 +141,13 @@
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }

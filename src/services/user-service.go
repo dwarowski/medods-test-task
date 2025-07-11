@@ -176,3 +176,21 @@ func RefreshToken(db *gorm.DB, dto dt.TokensDto, userAgent string, ipAdress stri
 	}
 	return tokens, nil
 }
+
+func GetUUID(db *gorm.DB, accessToken string) (any, error) {
+
+	// Parse access token and save payload with defined structure
+	payload := &gentokens.AccessTokenClaims{}
+	_, parseErr := jwt.ParseWithClaims(accessToken, payload, func(t *jwt.Token) (any, error) { return readkey.ReadPublicKey("keys/public.pem") })
+	if parseErr != nil {
+		return nil, parseErr
+	}
+
+	// Find user and return id
+	var user models.User
+	result := db.First(&user, payload.GUID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return user.ID, nil
+}

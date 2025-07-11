@@ -16,6 +16,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	router.POST("/register", func(ctx *gin.Context) { CreateUserHandler(ctx, db) })
 	router.POST("/login", func(ctx *gin.Context) { LoginHandler(ctx, db) })
 	router.POST("/refresh", func(ctx *gin.Context) { RefreshHandler(ctx, db) })
+	router.GET("/getUUID", func(ctx *gin.Context) { getUUID(ctx, db) })
 }
 
 // @Summary Get a user by ID
@@ -118,4 +119,25 @@ func RefreshHandler(ctx *gin.Context, db *gorm.DB) {
 		return
 	}
 	ctx.JSON(http.StatusOK, result)
+}
+
+// @Summary Get user Id
+// @ID get-uuid
+// @Produce json
+// @Router /getUUID [get]
+// @Security ApiKeyAuth
+func getUUID(ctx *gin.Context, db *gorm.DB) {
+	authToken := ctx.GetHeader("Authorization")
+	if authToken == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "authorization Not Found"})
+		return
+	}
+
+	result, err := services.GetUUID(db, authToken)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, result)
+
 }
