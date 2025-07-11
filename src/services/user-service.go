@@ -20,7 +20,7 @@ import (
 )
 
 // Get tokens for user by its id
-func GetByID(db *gorm.DB, id uuid.UUID, userAgent string, ipAdress string) (any, error) {
+func GetByID(db *gorm.DB, id uuid.UUID, userAgent string, ipAdress string) (*dt.TokensDto, error) {
 
 	// Trying to find user
 	var user models.User
@@ -38,7 +38,7 @@ func GetByID(db *gorm.DB, id uuid.UUID, userAgent string, ipAdress string) (any,
 }
 
 // Create user from email username and password
-func CreateUser(db *gorm.DB, dto dt.CreateUserDto, userAgent string, ipAdress string) (any, error) {
+func CreateUser(db *gorm.DB, dto dt.CreateUserDto, userAgent string, ipAdress string) (*dt.TokensDto, error) {
 
 	// Hash plain password
 	HashedPassword, _ := hashstring.Hash(dto.PlainPassword)
@@ -59,7 +59,7 @@ func CreateUser(db *gorm.DB, dto dt.CreateUserDto, userAgent string, ipAdress st
 }
 
 // Log in via email and password
-func Login(db *gorm.DB, dto dt.LoginDto, userAgent string, ipAdress string) (any, error) {
+func Login(db *gorm.DB, dto dt.LoginDto, userAgent string, ipAdress string) (*dt.TokensDto, error) {
 
 	// Check if user with this email exsist
 	var user models.User
@@ -83,7 +83,7 @@ func Login(db *gorm.DB, dto dt.LoginDto, userAgent string, ipAdress string) (any
 }
 
 // Tokens generation and save to db
-func GenerateAndSaveTokens(db *gorm.DB, userID uuid.UUID, userAgent string, ipAdress string) (any, error) {
+func GenerateAndSaveTokens(db *gorm.DB, userID uuid.UUID, userAgent string, ipAdress string) (*dt.TokensDto, error) {
 
 	// Generate access and refresh token
 	accessToken, accessTokenId, accErr := gentokens.GenreateAccessToken(userID)
@@ -107,11 +107,11 @@ func GenerateAndSaveTokens(db *gorm.DB, userID uuid.UUID, userAgent string, ipAd
 		return nil, addToken.Error
 	}
 
-	return dt.TokensDto{AccessToken: accessToken, RefreshToken: refreshToken}, nil
+	return &dt.TokensDto{AccessToken: accessToken, RefreshToken: refreshToken}, nil
 }
 
 // Refresh tokens
-func RefreshToken(db *gorm.DB, dto dt.TokensDto, userAgent string, ipAdress string) (any, error) {
+func RefreshToken(db *gorm.DB, dto dt.TokensDto, userAgent string, ipAdress string) (*dt.TokensDto, error) {
 
 	// Parse refresh token and save payload with defined structure
 	refreshToken := &gentokens.RefreshTokenClaims{}
@@ -183,7 +183,7 @@ func RefreshToken(db *gorm.DB, dto dt.TokensDto, userAgent string, ipAdress stri
 }
 
 // Get User id
-func GetUUID(db *gorm.DB, accessToken string) (any, error) {
+func GetUUID(db *gorm.DB, accessToken string) (*dt.GetUUIDDto, error) {
 
 	// Parse access token and save payload with defined structure
 	payload := &gentokens.AccessTokenClaims{}
@@ -198,5 +198,6 @@ func GetUUID(db *gorm.DB, accessToken string) (any, error) {
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return user.ID, nil
+	userId := &dt.GetUUIDDto{Uuid: user.ID}
+	return userId, nil
 }
