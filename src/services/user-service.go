@@ -19,7 +19,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// Get tokens for user by its id
 func GetByID(db *gorm.DB, id uuid.UUID, userAgent string, ipAdress string) (any, error) {
+
+	// Trying to find user
 	var user models.User
 	result := db.First(&user, id)
 	if result.Error != nil {
@@ -51,7 +54,6 @@ func CreateUser(db *gorm.DB, dto dt.CreateUserDto, userAgent string, ipAdress st
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
-
 	return tokens, nil
 }
 
@@ -75,7 +77,6 @@ func Login(db *gorm.DB, dto dt.LoginDto, userAgent string, ipAdress string) (any
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
-
 	return tokens, nil
 }
 
