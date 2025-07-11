@@ -10,30 +10,38 @@ import (
 
 func ReadPrivateKey() (*rsa.PrivateKey, error) {
 	// Get private key
-	privateKeyBytes := os.Getenv("PRIVATE_KEY_PATH")
-	if privateKeyBytes == "" {
+	privateKeyPath := os.Getenv("PRIVATE_KEY_PATH")
+	if privateKeyPath == "" {
 		return nil, errors.New("DANGER: PRIVATE KEY NOT FOUND")
+	}
+	privateKeyBytes, err := os.ReadFile(privateKeyPath)
+	if err != nil {
+		return nil, err
 	}
 
 	// Parse Key
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKeyBytes))
-	if err != nil {
-		return nil, err
+	privateKey, parseErr := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
+	if parseErr != nil {
+		return nil, parseErr
 	}
 	return privateKey, nil
 }
 
 func ReadPublicKey() (*rsa.PublicKey, error) {
 	// Get public key
-	publicKeyBytes := os.Getenv("PUBLIC_KEY_PATH")
-	if publicKeyBytes == "" {
+	publicKeyPath := os.Getenv("PUBLIC_KEY_PATH")
+	if publicKeyPath == "" {
 		return nil, errors.New("DANGER: PUBLIC KEY NOT FOUND")
+	}
+	publicKeyBytes, err := os.ReadFile(publicKeyPath)
+	if err != nil {
+		return nil, err
 	}
 
 	// Parse Key
-	publicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicKeyBytes))
-	if err != nil {
-		return nil, err
+	publicKey, parseErr := jwt.ParseRSAPublicKeyFromPEM(publicKeyBytes)
+	if parseErr != nil {
+		return nil, parseErr
 	}
 	return publicKey, nil
 }
