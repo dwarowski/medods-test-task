@@ -33,7 +33,7 @@ func GenreateAccessToken(userId uuid.UUID) (string, uuid.UUID, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS512, payload)
 
-	secret, err := readkey.ReadRSAKey("keys/private.pem")
+	secret, err := readkey.ReadPrivateKey()
 	if err != nil {
 		return "", uuid.Nil, err
 	}
@@ -61,7 +61,7 @@ func GenerateRefreshToken(accessTokenId uuid.UUID, userId uuid.UUID, userAgent s
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS512, payload)
 
-	secret, err := readkey.ReadRSAKey("keys/private.pem")
+	secret, err := readkey.ReadPrivateKey()
 	if err != nil {
 		return "", uuid.Nil, err
 	}

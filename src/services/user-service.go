@@ -111,14 +111,14 @@ func RefreshToken(db *gorm.DB, dto dt.TokensDto, userAgent string, ipAdress stri
 
 	// Parse refresh token and save payload with defined structure
 	refreshToken := &gentokens.RefreshTokenClaims{}
-	_, refTknErr := jwt.ParseWithClaims(dto.RefreshToken, refreshToken, func(t *jwt.Token) (any, error) { return readkey.ReadPublicKey("keys/public.pem") })
+	_, refTknErr := jwt.ParseWithClaims(dto.RefreshToken, refreshToken, func(t *jwt.Token) (any, error) { return readkey.ReadPublicKey() })
 	if refTknErr != nil {
 		return nil, refTknErr
 	}
 
 	// Parse access token and save payload with defined structure
 	accessToken := &gentokens.AccessTokenClaims{}
-	_, accTknErr := jwt.ParseWithClaims(dto.AccessToken, accessToken, func(t *jwt.Token) (any, error) { return readkey.ReadPublicKey("keys/public.pem") })
+	_, accTknErr := jwt.ParseWithClaims(dto.AccessToken, accessToken, func(t *jwt.Token) (any, error) { return readkey.ReadPublicKey() })
 	if accTknErr != nil {
 		fmt.Printf("\x1b[43mWarning: %v\x1b[0m\n ", accTknErr)
 	}
@@ -182,7 +182,7 @@ func GetUUID(db *gorm.DB, accessToken string) (any, error) {
 
 	// Parse access token and save payload with defined structure
 	payload := &gentokens.AccessTokenClaims{}
-	_, parseErr := jwt.ParseWithClaims(accessToken, payload, func(t *jwt.Token) (any, error) { return readkey.ReadPublicKey("keys/public.pem") })
+	_, parseErr := jwt.ParseWithClaims(accessToken, payload, func(t *jwt.Token) (any, error) { return readkey.ReadPublicKey() })
 	if parseErr != nil {
 		return nil, parseErr
 	}
