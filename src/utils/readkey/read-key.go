@@ -1,13 +1,14 @@
 package readkey
 
 import (
+	"crypto/rsa"
 	"errors"
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func ReadPrivateKey() (any, error) {
+func ReadPrivateKey() (*rsa.PrivateKey, error) {
 	// Get private key
 	privateKeyBytes := os.Getenv("PRIVATE_KEY_PATH")
 	if privateKeyBytes == "" {
@@ -22,7 +23,7 @@ func ReadPrivateKey() (any, error) {
 	return privateKey, nil
 }
 
-func ReadPublicKey() (any, error) {
+func ReadPublicKey() (*rsa.PublicKey, error) {
 	// Get public key
 	publicKeyBytes := os.Getenv("PUBLIC_KEY_PATH")
 	if publicKeyBytes == "" {
