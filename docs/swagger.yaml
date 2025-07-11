@@ -8,6 +8,17 @@ definitions:
       username:
         type: string
     type: object
+  dto.ErrorDto:
+    properties:
+      error:
+        type: string
+    type: object
+  dto.GetUUIDDto:
+    properties:
+      uuid:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
   dto.LoginDto:
     properties:
       email:
@@ -29,10 +40,28 @@ info:
 paths:
   /getUUID:
     get:
+      consumes:
+      - application/json
       operationId: get-uuid
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: Returns Id of current authorized user
+          schema:
+            $ref: '#/definitions/dto.GetUUIDDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
       security:
       - ApiKeyAuth: []
       summary: Get user Id

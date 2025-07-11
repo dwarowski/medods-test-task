@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/dwarowski/medods-test-task/src/dto"
 	"github.com/dwarowski/medods-test-task/src/services"
@@ -142,9 +143,14 @@ func RefreshHandler(ctx *gin.Context, db *gorm.DB) {
 
 // @Summary Get user Id
 // @ID get-uuid
+// @Accept json
 // @Produce json
 // @Router /getUUID [get]
 // @Security ApiKeyAuth
+// @Success 200 {object} dto.GetUUIDDto "Returns Id of current authorized user"
+// @Failure 400 {object} dto.ErrorDto "Bad Request"
+// @Failure 403 {object} dto.ErrorDto "Forbidden"
+// @Failure 500 {object} dto.ErrorDto "Internal server error"
 func getUUID(ctx *gin.Context, db *gorm.DB) {
 
 	// Get authorization header from request
@@ -157,7 +163,11 @@ func getUUID(ctx *gin.Context, db *gorm.DB) {
 	// Try getting user id from db
 	result, err := services.GetUUID(db, authToken)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if strings.Contains(err.Error(), "token") {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(http.StatusOK, result)
