@@ -26,6 +26,9 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 // @Produce json
 // @Param id path string true "User ID" Format(uuid)
 // @Router /users/{id} [get]
+// @Success 200 {object} dto.GetUUIDDto "Returns Id of current authorized user"
+// @Failure 400 {object} dto.ErrorDto "Bad Request"
+// @Failure 500 {object} dto.ErrorDto "Internal server error"
 func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 
 	// Get id param and check if its UUID
@@ -48,6 +51,10 @@ func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 	// Get tokens by ID
 	user, err := services.GetByID(db, idn, userAgent, ipAddress)
 	if err != nil {
+		if strings.Contains(err.Error(), "token") {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
@@ -59,6 +66,9 @@ func GetUserHandler(ctx *gin.Context, db *gorm.DB) {
 // @Produce json
 // @Param dto body dto.CreateUserDto true "register user"
 // @Router /register [post]
+// @Success 200 {object} dto.GetUUIDDto "Returns Id of current authorized user"
+// @Failure 400 {object} dto.ErrorDto "Bad Request"
+// @Failure 500 {object} dto.ErrorDto "Internal server error"
 func CreateUserHandler(ctx *gin.Context, db *gorm.DB) {
 
 	// Get data from dto
@@ -77,6 +87,10 @@ func CreateUserHandler(ctx *gin.Context, db *gorm.DB) {
 	// Try create user and return tokens
 	result, err := services.CreateUser(db, dto, userAgent, ipAddress)
 	if err != nil {
+		if strings.Contains(err.Error(), "token") {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -88,6 +102,9 @@ func CreateUserHandler(ctx *gin.Context, db *gorm.DB) {
 // @Produce json
 // @Param dto body dto.LoginDto true "login user"
 // @Router /login [post]
+// @Success 200 {object} dto.GetUUIDDto "Returns Id of current authorized user"
+// @Failure 400 {object} dto.ErrorDto "Bad Request"
+// @Failure 500 {object} dto.ErrorDto "Internal server error"
 func LoginHandler(ctx *gin.Context, db *gorm.DB) {
 
 	// Get data from dto
@@ -106,6 +123,10 @@ func LoginHandler(ctx *gin.Context, db *gorm.DB) {
 	// Try loggin in and return tokens
 	result, err := services.Login(db, dto, userAgent, ipAddress)
 	if err != nil {
+		if strings.Contains(err.Error(), "token") {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -114,9 +135,13 @@ func LoginHandler(ctx *gin.Context, db *gorm.DB) {
 
 // @Summary Refresh
 // @ID token-refresh
+// @Accept json
 // @Produce json
 // @Param dto body dto.TokensDto true "refresh tokens"
 // @Router /refresh [post]
+// @Success 200 {object} dto.GetUUIDDto "Returns Id of current authorized user"
+// @Failure 400 {object} dto.ErrorDto "Bad Request"
+// @Failure 500 {object} dto.ErrorDto "Internal server error"
 func RefreshHandler(ctx *gin.Context, db *gorm.DB) {
 
 	// Get data from dto
@@ -135,7 +160,11 @@ func RefreshHandler(ctx *gin.Context, db *gorm.DB) {
 	// Try refreshing tokens
 	result, err := services.RefreshToken(db, dto, userAgent, ipAddress)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if strings.Contains(err.Error(), "token") {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(http.StatusOK, result)

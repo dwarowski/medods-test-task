@@ -77,10 +77,24 @@ paths:
           $ref: '#/definitions/dto.LoginDto'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: Returns Id of current authorized user
+          schema:
+            $ref: '#/definitions/dto.GetUUIDDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
       summary: Log in
   /refresh:
     post:
+      consumes:
+      - application/json
       operationId: token-refresh
       parameters:
       - description: refresh tokens
@@ -91,7 +105,19 @@ paths:
           $ref: '#/definitions/dto.TokensDto'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: Returns Id of current authorized user
+          schema:
+            $ref: '#/definitions/dto.GetUUIDDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
       summary: Refresh
   /register:
     post:
@@ -105,7 +131,19 @@ paths:
           $ref: '#/definitions/dto.CreateUserDto'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: Returns Id of current authorized user
+          schema:
+            $ref: '#/definitions/dto.GetUUIDDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
       summary: create a user
   /users/{id}:
     get:
@@ -119,7 +157,19 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: Returns Id of current authorized user
+          schema:
+            $ref: '#/definitions/dto.GetUUIDDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorDto'
       summary: Get a user by ID
 securityDefinitions:
   ApiKeyAuth:

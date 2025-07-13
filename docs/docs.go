@@ -76,11 +76,33 @@ const docTemplate = `{
                         }
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "Returns Id of current authorized user",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetUUIDDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorDto"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorDto"
+                        }
+                    }
+                }
             }
         },
         "/refresh": {
             "post": {
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -97,7 +119,26 @@ const docTemplate = `{
                         }
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "Returns Id of current authorized user",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetUUIDDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorDto"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorDto"
+                        }
+                    }
+                }
             }
         },
         "/register": {
@@ -118,7 +159,26 @@ const docTemplate = `{
                         }
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "Returns Id of current authorized user",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetUUIDDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorDto"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorDto"
+                        }
+                    }
+                }
             }
         },
         "/users/{id}": {
@@ -138,7 +198,26 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "Returns Id of current authorized user",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetUUIDDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorDto"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorDto"
+                        }
+                    }
+                }
             }
         }
     },
