@@ -1,8 +1,10 @@
-Запуск API
+Запуск API без docker
 ```bash
 git clone git@gitgub.com:dwarowski/medods-test-task
 
 cd medods-test-task
+
+source .env
 
 go run main.go
 ```
@@ -16,8 +18,14 @@ go run main.go
 
 .env example 
 ```bash
-DATABASE_CONFIG="host=localhost user=postgres password=12345678 dbname=postgres port=5433 sslmode=disable"
+POSTGRES_HOST="localhost"
+POSTGRES_USER="postgres"
+POSTGRES_PASSWORD=12345678
+POSTGRES_DB="postgres"
+POSTGRES_PORT=5432
+
 PRIVATE_KEY_PATH="keys/private.pem"
 PUBLIC_KEY_PATH="keys/public.pem"
+
 GIN_MODE="debug"
 ```
