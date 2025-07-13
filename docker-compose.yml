@@ -1,0 +1,48 @@
+services:
+    app:
+        container_name: API
+        build:
+            context: .
+            dockerfile: dockerfile
+        depends_on:
+            - db
+        environment:
+            - POSTGRES_HOST=${POSTGRES_HOST}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_PORT=5432
+            - PRIVATE_KEY_PATH=keys/private.pem
+            - PUBLIC_KEY_PATH=keys/public.pem
+        ports:
+            - 8080:8080
+        volumes:
+            - ./keys:/app/keys
+        env_file:
+            - .env
+        networks:
+            - medods-network
+
+    db:
+        container_name: postgres
+        image: postgres:16.6-alpine
+        ports:
+            - ${POSTGRES_PORT}:5432
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+        volumes:
+            - db_api_data:/var/lib/postgresql/data
+        env_file:
+            - .env
+        networks:
+            - medods-network
+
+volumes:
+    db_api_data:
+
+
+networks:
+    medods-network:
+        driver: bridge
