@@ -2,10 +2,12 @@
 ## Требования для запуска
 * docker >= 28.3.0
 * docker-compose >= 2.38.1
+* openssl >  3.0.13 или публичный и приватный ключ RSA512
 
 ## Требования для разработки
 * golang >= 1.24.4
 * postgres >= 16.6
+* openssl >  3.0.13
 
 # Запуск через docker
 ## Шаг 1
@@ -33,6 +35,13 @@ GIN_MODE="release"
 ```
 
 ## Шаг 3
+Сгенерируйте ключи для хэширования JWT через openssl или любой другой генератор RSA512 ключей и сохраните их в папке ``/keys`` в корневой директории
+```bash
+openssl genrsa -out keys/private.pem 2048
+openssl rsa -in keys/private.pem -pubout -out keys/public.pem
+```
+
+## Шаг 4
 Если все предыдущие шаги получились успешно то запустите файл docker-compose следующей командой  
 ```bash
 docker-compose -f docker-compose.yml up -d
