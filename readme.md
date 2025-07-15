@@ -35,9 +35,9 @@ GIN_MODE="release"
 ```
 
 ## Шаг 3
-Сгенерируйте ключи для хэширования JWT через openssl или любой другой генератор RSA512 ключей и сохраните их в папке ``/keys`` в корневой директории
+Создайте папку keys и сгенерируйте ключи для хэширования JWT через openssl или любой другой генератор RSA512 ключей и сохраните их в папке ``/keys`` в корневой директории
 ```bash
-openssl genrsa -out keys/private.pem 2048
+openssl genrsa -out keys/private.pem 512
 openssl rsa -in keys/private.pem -pubout -out keys/public.pem
 ```
 
